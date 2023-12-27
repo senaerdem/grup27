@@ -10,6 +10,19 @@ public class Queue {
 
     public ArrayList<Process> userqueue_three = new ArrayList<>();//3.User Kuyruğu
 
+    //public int remaningMemory = 1024; // all memory
+
+    public int remaningMemoryForRealTime = 64;  // remaning memory real times tasks
+
+    public int remaningMemoryForUser = 960; // remaning memory for user's tasks
+
+    public int remaningPrinter = 2; //Kalan printer sayısı
+
+    public int remaningScanner = 1; //Kalan scanner sayısı
+
+    public int remaningModem = 1;   //Kalan modem sayısı
+
+    public int remaningCd = 2;  //Kalan cd sayısı
 
     public int control_id = -1;
     public int time = 0;
@@ -215,10 +228,40 @@ public class Queue {
             //Control 0 ise ve prosesin ulaşma zamanı zamandan küçükse ve kalan zamanı 0dan büyükse ekrana yazdır.
             //prosesin kalan süresini 1 azalt.
             //Control değerini 1 yap.
-            if(realtimequeue.get(i).arrival_time <= this.getTime() && this.realtimequeue.get(i).remain_time>0 && control==0){
+            if(realtimequeue.get(i).arrival_time <= this.getTime() && this.realtimequeue.get(i).remain_time>0 && control==0 && this.realtimequeue.get(i).process_age<20){
+                // check if resources already allocated for this process
+                if(realtimequeue.get(i).isResourcesAllocated()==false){
+                    // check if there is a enough memory
+                    if(remaningMemoryForRealTime >= realtimequeue.get(i).memory_size){
+                        remaningMemoryForRealTime = remaningMemoryForRealTime - realtimequeue.get(i).memory_size;
+                        realtimequeue.get(i).setResourcesAllocated(true);
+                    }
+                    else{
+                        //System.out.println("Not enough memory for this process"+""+"Process id: "+realtimequeue.get(i).id+""+"process age: "+realtimequeue.get(i).process_age);
+                        // even if process is not run properly, it should be aged
+                        realtimequeue.get(i).process_age = realtimequeue.get(i).process_age + 1;
+                        continue;
+                    }
+                }
                 Color.setColor(this.realtimequeue.get(i).color);
                 PrintProcess(this.realtimequeue.get(i));
                 this.realtimequeue.get(i).remain_time = this.realtimequeue.get(i).remain_time -1;
+
+                // age of process is increased
+                this.realtimequeue.get(i).process_age = this.realtimequeue.get(i).process_age + 1;
+
+                //if process is expired, release resources
+                if(this.realtimequeue.get(i).process_age == 20){
+                    remaningMemoryForRealTime = remaningMemoryForRealTime + realtimequeue.get(i).memory_size;
+                    realtimequeue.get(i).setResourcesAllocated(false);
+                }
+
+                // if process is finished, release resources
+                if(this.realtimequeue.get(i).remain_time == 0){
+                    remaningMemoryForRealTime = remaningMemoryForRealTime + realtimequeue.get(i).memory_size;
+                    realtimequeue.get(i).setResourcesAllocated(false);
+
+                }
                 control = 1;
             }
         }
@@ -230,7 +273,26 @@ public class Queue {
                 //Prosesin ulaşma zamanı zamandan küçükse ve kalan zamanı 0dan büyükse ekrana yazdır.
 
                 //Control değerini 1 yap.
-                if(userqueue_one.get(j).arrival_time <= this.getTime() && this.userqueue_one.get(j).remain_time>0 && control==0){
+                if(userqueue_one.get(j).arrival_time <= this.getTime() && this.userqueue_one.get(j).remain_time>0 && control==0 && this.userqueue_one.get(j).process_age<20){
+                    // check if resources already allocated for this process
+                    if(userqueue_one.get(j).isResourcesAllocated()==false){
+                        // check if there is enough memory, printer, scanner, modem, cd even if 1 of them is not enough, process will not be run
+                        if(remaningMemoryForUser >= userqueue_one.get(j).memory_size && remaningPrinter >= userqueue_one.get(j).printer && remaningScanner >= userqueue_one.get(j).scanner && remaningModem >= userqueue_one.get(j).modem && remaningCd >= userqueue_one.get(j).cd){
+                            remaningMemoryForUser = remaningMemoryForUser - userqueue_one.get(j).memory_size;
+                            remaningPrinter = remaningPrinter - userqueue_one.get(j).printer;
+                            remaningScanner = remaningScanner - userqueue_one.get(j).scanner;
+                            remaningModem = remaningModem - userqueue_one.get(j).modem;
+                            remaningCd = remaningCd - userqueue_one.get(j).cd;
+                            userqueue_one.get(j).setResourcesAllocated(true);
+                        }
+                        else{
+                            //System.out.println("Not enough resources for this process"+""+" Process id: "+userqueue_one.get(j).id+""+" process priority"+userqueue_one.get(j).priority+""+" process age: "+userqueue_one.get(j).process_age);
+                            // even if process is not run properly, it should be aged
+                            userqueue_one.get(j).process_age = userqueue_one.get(j).process_age + 1;
+                            continue;
+                        }
+                    }
+                    Color.setColor(this.userqueue_one.get(j).color);
                     PrintProcess(this.userqueue_one.get(j));
                     //Tüm prosesleri günceller ve eğer öncelik değişmesi gerekiyorsa öncelik değiştirir.Süresini bir azaltır.
                     UpdateAllProcess(this.userqueue_one.get(j));
@@ -244,7 +306,26 @@ public class Queue {
             for(int k=0;k<this.userqueue_two.size();k++){
                 //Prosesin ulaşma zamanı zamandan küçükse ve kalan zamanı 0dan büyükse ekrana yazdır.
                 //Control değerini 1 yap.
-                if(userqueue_two.get(k).arrival_time <= this.getTime() && this.userqueue_two.get(k).remain_time>0 && control==0){
+                if(userqueue_two.get(k).arrival_time <= this.getTime() && this.userqueue_two.get(k).remain_time>0 && control==0&& this.userqueue_two.get(k).process_age<20){
+                    // check if resources already allocated for this process
+                    if(userqueue_two.get(k).isResourcesAllocated()==false){
+                        // check if there is enough memory, printer, scanner, modem, cd even if 1 of them is not enough, process will not be run
+                        if(remaningMemoryForUser >= userqueue_two.get(k).memory_size && remaningPrinter >= userqueue_two.get(k).printer && remaningScanner >= userqueue_two.get(k).scanner && remaningModem >= userqueue_two.get(k).modem && remaningCd >= userqueue_two.get(k).cd){
+                            remaningMemoryForUser = remaningMemoryForUser - userqueue_two.get(k).memory_size;
+                            remaningPrinter = remaningPrinter - userqueue_two.get(k).printer;
+                            remaningScanner = remaningScanner - userqueue_two.get(k).scanner;
+                            remaningModem = remaningModem - userqueue_two.get(k).modem;
+                            remaningCd = remaningCd - userqueue_two.get(k).cd;
+                            userqueue_two.get(k).setResourcesAllocated(true);
+                        }
+                        else{
+                            //System.out.println("Not enough resources for this process"+""+" Process id: "+userqueue_two.get(k).id+""+" process priority"+userqueue_two.get(k).priority+""+" process age: "+userqueue_two.get(k).process_age);
+                            // even if process is not run properly, it should be aged
+                            userqueue_two.get(k).process_age = userqueue_two.get(k).process_age + 1;
+                            continue;
+                        }
+                    }
+                    Color.setColor(this.userqueue_two.get(k).color);
                     PrintProcess(userqueue_two.get(k));
                     //Tüm prosesleri günceller ve eğer öncelik değişmesi gerekiyorsa öncelik değiştirir.Süresini bir azaltır.
                     UpdateAllProcess(this.userqueue_two.get(k));
@@ -258,7 +339,26 @@ public class Queue {
             for(int l=0;l<this.userqueue_three.size();l++){
                 //Prosesin ulaşma zamanı zamandan küçükse ve kalan zamanı 0dan büyükse ekrana yazdır.
                 //Control değerini 1 yap.
-                if(userqueue_three.get(l).arrival_time <= this.getTime() && this.userqueue_three.get(l).remain_time>0 && control==0){
+                if(userqueue_three.get(l).arrival_time <= this.getTime() && this.userqueue_three.get(l).remain_time>0 && control==0 && this.userqueue_three.get(l).process_age<20){
+                    // check if resources already allocated for this process
+                    if(userqueue_three.get(l).isResourcesAllocated()==false){
+                        // check if there is enough memory, printer, scanner, modem, cd even if 1 of them is not enough, process will not be run
+                        if(remaningMemoryForUser >= userqueue_three.get(l).memory_size && remaningPrinter >= userqueue_three.get(l).printer && remaningScanner >= userqueue_three.get(l).scanner && remaningModem >= userqueue_three.get(l).modem && remaningCd >= userqueue_three.get(l).cd){
+                            remaningMemoryForUser = remaningMemoryForUser - userqueue_three.get(l).memory_size;
+                            remaningPrinter = remaningPrinter - userqueue_three.get(l).printer;
+                            remaningScanner = remaningScanner - userqueue_three.get(l).scanner;
+                            remaningModem = remaningModem - userqueue_three.get(l).modem;
+                            remaningCd = remaningCd - userqueue_three.get(l).cd;
+                            userqueue_three.get(l).setResourcesAllocated(true);
+                        }
+                        else{
+                            //System.out.println("Not enough resources for this process"+""+" Process id: "+userqueue_three.get(l).id+""+" process priority"+userqueue_three.get(l).priority+""+" process age: "+userqueue_three.get(l).process_age);
+                            // even if process is not run properly, it should be aged
+                            userqueue_three.get(l).process_age = userqueue_three.get(l).process_age + 1;
+                            continue;
+                        }
+                    }
+                    Color.setColor(this.userqueue_three.get(l).color);
                     PrintProcess(this.userqueue_three.get(l));
                     //Tüm prosesleri günceller.Süresini bir azaltır.
                     UpdateAllProcess(this.userqueue_three.get(l));
@@ -281,6 +381,42 @@ public class Queue {
                 }
                 //Kalan zamanı 1 azaltır.
                 this.processes.get(i).remain_time = this.processes.get(i).remain_time -1;
+                // control = 1; control before i edited
+                // age of process is increased
+                this.processes.get(i).process_age = this.processes.get(i).process_age + 1;
+
+                //if process is expired, release resources
+                if(this.processes.get(i).process_age == 20){
+                    if(this.processes.get(i).priority == 0){
+                        remaningMemoryForRealTime = remaningMemoryForRealTime + processes.get(i).memory_size;
+                        processes.get(i).setResourcesAllocated(false);
+                    }
+                    else{
+                        remaningMemoryForUser = remaningMemoryForUser + processes.get(i).memory_size;
+                        remaningPrinter = remaningPrinter + processes.get(i).printer;
+                        remaningScanner = remaningScanner + processes.get(i).scanner;
+                        remaningModem = remaningModem + processes.get(i).modem;
+                        remaningCd = remaningCd + processes.get(i).cd;
+                        processes.get(i).setResourcesAllocated(false);
+                    }
+                }
+
+                // if process is finished, release resources
+                if(this.processes.get(i).remain_time == 0){
+                    if(this.processes.get(i).priority == 0){
+                        remaningMemoryForRealTime = remaningMemoryForRealTime + processes.get(i).memory_size;
+                        processes.get(i).setResourcesAllocated(false);
+                    }
+                    else{
+                        remaningMemoryForUser = remaningMemoryForUser + processes.get(i).memory_size;
+                        remaningPrinter = remaningPrinter + processes.get(i).printer;
+                        remaningScanner = remaningScanner + processes.get(i).scanner;
+                        remaningModem = remaningModem + processes.get(i).modem;
+                        remaningCd = remaningCd + processes.get(i).cd;
+                        processes.get(i).setResourcesAllocated(false);
+                    }
+                }
+
                 control = 1;
             }
         }
