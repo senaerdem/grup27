@@ -21,11 +21,17 @@ public class FileReader {
             //Dosyan�n sonuna kadar oku ve her sat�rda yeni process olu�tur.
             while ((str = bReader.readLine()) != null) {//Buffer�n her sat�r� gezilir ve e�er null de�ilse yeni bir process nesnesi olu�turulup bu stringi parametre olarak verir.
                 Process new_process = process.CreateNewProcess(str);
-                jobDispatchList.AddProcessToJob(new_process);//Olu�turulan yeni nesneyi kuyruk nesnesine atama yapar.
-                ProcessBuilder processBuilder = new ProcessBuilder(str);//Proses buildera atan�r.
-
+                if (new_process != null) {
+                    // Eğer işlem talep ettiği bellek boyutu toplam kullanılabilir bellekten fazlaysa, işlemi reddet
+                    if (new_process.memory_size > Memory.memory_sizeForUserTasks) {
+                        System.out.println("HATA - İşlem çok fazla bellek talep ediyor: " + new_process.id);
+                    } else {
+                        jobDispatchList.AddProcessToJob(new_process);
+                    }
+                }
             }
-            dStream.close();//ba�lant� kapat�l�r.
+            
+            //dStream.close();//ba�lant� kapat�l�r.
             jobDispatchList.SplitQueue();//Queue s�n�f�n�n SplitQueue fonksiyonu �a��r�l�r.
             int length = jobDispatchList.QueueLength();//kuyruktaki verilerin uzunlu�u length de�i�kenine atan�r.
             int i=0;

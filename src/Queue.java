@@ -192,7 +192,12 @@ public class Queue {
 
     //Prosesler ArrayListine yeni proses ekler.
     public void AddProcessToJob(Process process){
-        this.processes.add(process);
+    	// Eğer işlem talep ettiği bellek boyutu toplam kullanılabilir bellekten fazlaysa, işlemi reddet
+        if (process.memory_size > this.remaningMemoryForUser) {
+            System.out.println("HATA - İşlem çok fazla bellek talep ediyor: " + process.id);
+        } else {
+            this.processes.add(process);
+        }
     }
 
     public void SplitQueue(){
@@ -218,6 +223,8 @@ public class Queue {
             }
         }
     }
+    
+    
 
     //Prosesi çalıştırır.
     public void RunProcess(){
