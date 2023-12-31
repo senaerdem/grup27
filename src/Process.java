@@ -23,6 +23,19 @@ public class Process {
     public boolean isResourcesAllocated() {
         return isResourcesAllocated;
     }
+    
+    
+    
+ // Sürecin tamamlanıp tamamlanmadığını kontrol eder
+    public boolean isCompleted() {
+        return remain_time <= 0; // Kalan zaman 0 veya daha azsa süreç tamamlanmış sayılır
+    }
+    
+    
+    
+    
+    
+    
 
 
     public Queue jobDispatchList = new Queue();

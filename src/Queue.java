@@ -184,6 +184,29 @@ public class Queue {
     public void setTime(int time) {
         this.time = time;
     }
+    
+    
+    
+ // Kuyruktan bir süreci çıkarır ve döndürür
+    public Process poll() {
+        if (!processes.isEmpty()) {
+            return processes.remove(0); // ArrayList'in ilk elemanını çıkarır
+        }
+        return null;
+    }
+
+    // Kuyruğa yeni bir süreç ekler
+    public void offer(Process process) {
+        processes.add(process);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
 
     /**************--GET-SET FONKSİYONLARI--**************/
 
@@ -534,5 +557,10 @@ public class Queue {
         return length;
     }
     /*************--PROSES KUYRUKLARI FONSKİYONLARI--**************/
+    
+    public boolean isEmpty() {
+        return processes.isEmpty();
+    }
+
 
 }
